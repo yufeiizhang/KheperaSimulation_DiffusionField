@@ -7,6 +7,8 @@ load('field.mat'); % previous 1750points.mat
 % load robot trajectory
 
 %% Global Parameter
+% don't forget robot position in fun_fakeIniLoc
+% fun_fakeIniLoc();
 % load parameter file Scr_para
 Scr_para;
 % explicit parameter settings
