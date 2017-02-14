@@ -3,7 +3,7 @@ clear
 
 %% Load Data
 % load field data
-load('field.mat'); % previous 1750points.mat
+load('fieldData.mat'); % previous 1750points.mat
 % load robot trajectory
 
 %% Global Parameter

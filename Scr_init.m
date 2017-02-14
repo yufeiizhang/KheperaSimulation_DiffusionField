@@ -215,11 +215,8 @@ DataSet( counter , 1 : dataLen*agent ) = ...
 for agent = 1 : AgentNumber
     % DataSet( counter , dataLen*(agent-1)+1 : dataLen*agent )
          [ x , y , rot ]= ...
-    % 		fun_trackInterface( theClient , agent );% Location
             fun_fakeIniLoc( agent );
-    x = initLoc(agent,1);
-    y = initLoc(agent,2);
-    rot = initLoc(agent,3);
+    % 		fun_trackInterface( theClient , agent );% Location
     DataSet( counter , dataLen*(agent-1)+1 : dataLen*(agent-1)+3 )  = [ x , y , rot ];
     % 	DataSet( counter , dataLen*(agent-1)+4 ) = ...
     % 		fun_SensorReader( mbed(agent) , iniValue );% Sensor reading
@@ -247,8 +244,8 @@ DataSet( counter , 1 : dataLen*agent ) = ...
 for agent = 1 : AgentNumber
     % DataSet( counter , dataLen*(agent-1)+1 : dataLen*agent )
          [ x , y , rot ] = ...
+                         fun_fakeIniLoc( agent );
     % 		fun_trackInterface( theClient , agent );% Location
-            fun_fakeIniLoc( agent );
     x = initLoc(agent,1);
     y = initLoc(agent,2);
     rot = initLoc(agent,3);
