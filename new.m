@@ -29,22 +29,18 @@ iniBG = 0;
 % Initial Estimation Value
 iniEst = 0.6;
 % Initial Location for Simulation
-initLoc = [ 0 , 1 , 0 ; 1 , 0 , 0 ;  0 , -1 , 0 ; -1 , 0 , 0 ];
+initLoc = [ 0 , 0.2 , 0 ; 0.2 , 0 , 0 ;  0 , -0.2 , 0 ; -0.2 , 0 , 0 ];
 % maximum loop number
-loopNumMax = 10;
-%source location
-rs = [ 0.0172 ; 0.0801 ];
+loopNumMax = 80;
 % Set Background Concentraion of Simulation
 sensorBG = [0,0,0,0];
 % the frame that CO2 field become stable in fieldData, skip in simulation
 skipInitField = 120;
-% speed in simulation
-speed = 0.2;
+% speed limit for robot in simulation
+splim = 0.02;
 
 
 %% Initialize the Simulation
-% Set an initial orientation for simualtion
-iniOri = zeros( AgentNumber , 5 );
 % Calculate the formation for robot system, generate initDist
 initCenter = mean( initLoc( : , 1:2 ) );
 for agent = 1 : AgentNumber
@@ -71,8 +67,10 @@ for agent = 1 : AgentNumber
     % Feed Filter Result
     DataSet( counter , dataLen*(agent-1)+5 ) = ...
         DataSet( counter , dataLen*(agent-1)+4 );% No filter here
+    % Feed Target Location
+    DataSet( counter , dataLen*(agent-1)+6:dataLen*(agent-1)+7 ) = ...
+        DataSet( counter , dataLen*(agent-1)+1 : dataLen*(agent-1)+2 );
 end
-
 %% Initialize Counter 2
 counter = 2;
 frame = skipInitField-1;
@@ -89,6 +87,9 @@ for agent = 1 : AgentNumber
     % Feed Filter Result
     DataSet( counter , dataLen*(agent-1)+5 ) = ...
         DataSet( counter , dataLen*(agent-1)+4 );% No filter here
+    % Feed Target Location
+    DataSet( counter , dataLen*(agent-1)+6:dataLen*(agent-1)+7 ) = ...
+        DataSet( counter , dataLen*(agent-1)+1 : dataLen*(agent-1)+2 );
 end
 
 %% Init filterOut for Estimation
@@ -125,22 +126,28 @@ kalState(1).r = r;
 kalState(2).r = r;
 
 %% Figure
-% draw a figure, define axis and hold on
-scatter(rs(1),rs(2));
-hold on;
-grid on;
-axis([-2,2,-2,2])
+% mesh for field
+xmesh = [-2:0.1:2];
+ymesh = [-2:0.1:2];
+[xm,ym] = meshgrid(xmesh,ymesh);
+fm = field(xm,ym);
+contour(xm,ym,fm)
+hold on
+grid on
 % scatter robot location
 for agent = 1 : AgentNumber
     % khepera position
-    x0 = DataSet( counter , dataLen*(agent-1)+1 );
-    y0 = DataSet( counter , dataLen*(agent-1)+2 );
-    scatter( x , y , '.' );
+    x0(agent) = DataSet( counter , dataLen*(agent-1)+1 );
+    y0(agent) = DataSet( counter , dataLen*(agent-1)+2 );
     % sensor reading
     co2 = DataSet( counter , dataLen*(agent-1)+5 );
-    text( x0 , y0 , num2str(co2) );
-    drawnow;
+    %text( x0 , y0 , num2str(co2) );
 end
+x0(AgentNumber+1) = x0( 1 );
+y0(AgentNumber+1) = y0( 1 );
+plot( x0 , y0 , '-' );
+drawnow;
+
 
 %% Begin Iteration
 while(1)
@@ -155,7 +162,7 @@ while(1)
     % feed new location of robot system (movement in simulation)
     for agent  = 1 : AgentNumber
         DataSet( counter , dataLen*(agent-1)+1 : dataLen*(agent-1)+2 ) = ...
-            DataSet( counter , dataLen*(agent-1)+6:dataLen*(agent-1)+7 );
+            DataSet( counter-1 , dataLen*(agent-1)+6:dataLen*(agent-1)+7 );
         % no more rotation in simulation
         DataSet( counter , dataLen*(agent-1)+3 ) = 0;
     end
@@ -222,7 +229,16 @@ while(1)
     % Center Gradient
     grad = [ s.x(2,1) ; s.x(3,1) ] / norm([ s.x(2,1) , s.x(3,1) ]);
     % Move the center of robot formation
-    rc = rc + gradCoe * dt*grad;
+    %rc = rc + gradCoe * dt*grad;
+    % speed control here
+    dc = gradCoe * dt * grad;
+    v = norm(dc);
+    vcoe = 1;% coefient for velocity
+    if v > splim
+        vcoe = splim / v;
+    end
+    dc = dc .* vcoe;% update speed
+    rc = rc + dc;% back to rc
     %grad = fun_potential( grad , obst );
     %% Estimation and save the result
     % Parameter Estimation
@@ -245,17 +261,28 @@ while(1)
     DataSet( counter , dataLen*(4-1)+6:dataLen*(4-1)+7 ) = r4';
     clear r1 r2 r3 r4
     %% Figure
+    clf
+    % mesh for field
+    xmesh = [-2:0.1:2];
+    ymesh = [-2:0.1:2];
+    [xm,ym] = meshgrid(xmesh,ymesh);
+    fm = field(xm,ym);
+    contour(xm,ym,fm)
+    hold on
+    grid on
     % scatter robot location
     for agent = 1 : AgentNumber
         % khepera position
-        x0 = DataSet( counter , dataLen*(agent-1)+1 );
-        y0 = DataSet( counter , dataLen*(agent-1)+2 );
-        scatter( x , y , '.' );
+        x0(agent) = DataSet( counter , dataLen*(agent-1)+1 );
+        y0(agent) = DataSet( counter , dataLen*(agent-1)+2 );
         % sensor reading
         co2 = DataSet( counter , dataLen*(agent-1)+5 );
-        text( x0 , y0 , num2str(co2) );
-        drawnow;
+        %text( x0 , y0 , num2str(co2) );
     end
+    x0(AgentNumber+1) = x0( 1 );
+    y0(AgentNumber+1) = y0( 1 );
+    plot( x0 , y0 , '-' );
+    drawnow;
     %% Break Condition
     if counter >= ( loopNumMax + 2 )
         break;
