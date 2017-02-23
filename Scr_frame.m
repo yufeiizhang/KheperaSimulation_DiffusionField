@@ -1,6 +1,9 @@
 % Scr_frame
 % script for loop
 
+% empty dataset
+DataSet( counter, : ) = zeros(1, dataLen*AgentNumber);
+
 %% Set position of Khepera Robot
 for agent = 1 : AgentNumber
 %    DataSet( counter , dataLen*(agent-1)+1 : dataLen*(agent-1)+3 ) = ...
@@ -98,7 +101,7 @@ errort = error / dt;
 grad = [ s.x(2,1) ; s.x(3,1) ] / norm([ s.x(2,1) , s.x(3,1) ]);
 
 %% Calculate potential and Gradient
-grad = fun_potential( grad , obst );
+%grad = fun_potential( grad , obst );
 % Move the center of robot formation
 rc = rc + gradCoe * dt*grad;
 % Collect Data to DataSet
@@ -151,9 +154,11 @@ for agent = 1 : AgentNumber
     angle = angle * pi / 180;
 	DataSet( counter , dataLen*(agent-1)+9 ) = angle * 180 / pi;
 	% Translate to wheel speed for agent
-	lspeed = vmulti * velocity + angle * wmulti * ( agentLen / 2 );
+	%lspeed = vmulti * velocity + angle * wmulti * ( agentLen / 2 );
+    lspeed = 0;
 	DataSet( counter , dataLen*(agent-1)+10 ) = lspeed;
-	rspeed = vmulti * velocity - angle * wmulti * ( agentLen / 2 );
+	%rspeed = vmulti * velocity - angle * wmulti * ( agentLen / 2 );
+    rspeed = 0;
 	DataSet( counter , dataLen*(agent-1)+11 ) = rspeed;
 	
 end

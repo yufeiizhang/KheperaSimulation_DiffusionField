@@ -21,6 +21,10 @@ skipInitField = 120;
 % field concentration offset for simulation, some cases the fitting result may lower than 0
 concOffset = 100;
 
+%% initial location for simulation
+% for 4 aget, [x,y,rot]separatly
+initLoc = [ 0 , 1 , 0 ; 1 , 0 , 0 ;  0 , -1 , 0 ; -1 , 0 , 0 ];
+
 %% Initial System
 % load initial settings Scr_init
 Scr_init;

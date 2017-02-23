@@ -69,7 +69,7 @@ display('Calibrate CO2 Sensor...');
 % 	pause( calPause );
 % end
 % sensorBG = mean( sensorCal );
-sensorBG = 0;
+sensorBG = [0,0,0,0];
 display('Sensor Background:');
 % clear cCounter
 sensorBG
@@ -221,7 +221,7 @@ for agent = 1 : AgentNumber
     % 	DataSet( counter , dataLen*(agent-1)+4 ) = ...
     % 		fun_SensorReader( mbed(agent) , iniValue );% Sensor reading
     DataSet( counter , dataLen*(agent-1)+4 ) = ...
-        field(DataSet( counter , dataLen*(agent-1)+1 : dataLen*(agent-1)+2 ))+offset;
+        field(DataSet( counter , dataLen*(agent-1)+1 : dataLen*(agent-1)+2 ))+concOffset;
     % 	DataSet( counter , dataLen*(agent-1)+5 ) = ...
     % 		DataSet( counter , dataLen*(agent-1)+4 ) - sensorBG(agent) + iniBG;% No filter here
     DataSet( counter , dataLen*(agent-1)+5 ) = ...
@@ -253,7 +253,7 @@ for agent = 1 : AgentNumber
     % 	DataSet( counter , dataLen*(agent-1)+4 ) = ...
     % 		fun_SensorReader( mbed(agent) , DataSet( counter-1 , dataLen*(agent-1)+4 ) );% Sensor reading
     DataSet( counter , dataLen*(agent-1)+4 ) = ...
-        field(DataSet( counter , dataLen*(agent-1)+1 : dataLen*(agent-1)+2 ))+offset;
+        field(DataSet( counter , dataLen*(agent-1)+1 : dataLen*(agent-1)+2 ))+concOffset;
     % 	DataSet( counter , dataLen*(agent-1)+5 ) = ...
     % 		DataSet( counter , dataLen*(agent-1)+4 ) - sensorBG(agent) + iniBG;% No filter here
     DataSet( counter , dataLen*(agent-1)+5 ) = ...
