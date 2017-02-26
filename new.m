@@ -6,6 +6,10 @@ clear
 % Load Data of previous CO2 field
 load('fieldData.mat');
 % Load trajectory
+% Load Obstacle
+load('obs01.mat');
+% flip
+obs01f = flip(obs01,1);
 
 %% Claim Parameters
 % Number of Agent in Simulation
@@ -239,6 +243,16 @@ while(1)
     end
     dc = dc .* vcoe;% update speed
     rc = rc + dc;% back to rc
+    %% simulate the obstacles
+    RobotCenter = mean( rn , 2 );
+    SensingRange = 1.5;%(1.5m)
+    SensorAcc = 0.1;
+    % generate obs sensor result
+    [fArc,bArc]  = fun_fakeObsSensor( obs01f , RobotCenter , SensingRange , SensorAcc , 6 );
+    % calculate gradient for group of robot
+    obst = fun_obs2grad(fArc,bArc,SensingRange , 0.05 );
+    % update rc
+    rc = rc + obst;
     %grad = fun_potential( grad , obst );
     %% Estimation and save the result
     % Parameter Estimation
@@ -282,6 +296,16 @@ while(1)
     x0(AgentNumber+1) = x0( 1 );
     y0(AgentNumber+1) = y0( 1 );
     plot( x0 , y0 , '-' );
+    % draw obstacles
+    % reshape obs img
+    rObsImg = imresize( obs01f , size( xm ) );
+    % binary
+    bObsImg = rgb2gray( rObsImg );
+    bObsImg( bObsImg<255 ) = 1;
+    bObsImg( bObsImg>1 ) = 0;
+    bObsImg = im2double( bObsImg );
+    bObsImg( bObsImg>0 ) = 1;
+    contour(xm,ym,bObsImg);
     drawnow;
     %% Break Condition
     if counter >= ( loopNumMax + 2 )
