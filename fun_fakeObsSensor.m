@@ -1,7 +1,7 @@
-function [ fArc , bArc ] = fun_fakeObsSensor( obsImg , locAgent , senRange , senAcc , senNum )
+function [ fArc , bArc ] = fun_fakeObsSensor( bObsImg , locAgent , senRange , senAcc , senNum )
 % input is the location of obstacle shown in obsImg
-% obsImg should be an image of an x-y plane, and the obstacles should be
-% draw in black, and white(255,255,255) is the backgroud
+% bObsImg is a 0/1 matrix, hold the information of obs
+% if =1, obs exist in the grid point, if =0 okay for robot system
 % fieldgrid should be like a matrix which size is, for example, 100,100
 % senRange and senAcc is about the Fake sensor.
 % senRange is the detect range of the sensor (m, should be an integer)
@@ -19,14 +19,14 @@ fieldgrid=zeros(41,41);% accuracy as 1 centimeter
 % map the agents
 %locAgent = floor(locAgent .*100);% only keep centimeter here is enough
 
-% resize the image
-rObsImg = imresize( obsImg , size( fieldgrid ) );
-% binaryzation, obs as 1
-bObsImg = rgb2gray( rObsImg );
-bObsImg( bObsImg<255 ) = 1;
-bObsImg( bObsImg>1 ) = 0;
-bObsImg = im2double( bObsImg );
-bObsImg( bObsImg>0 ) = 1;
+% % resize the image
+% rObsImg = imresize( obsImg , size( fieldgrid ) );
+% % binaryzation, obs as 1
+% bObsImg = rgb2gray( rObsImg );
+% bObsImg( bObsImg<255 ) = 1;
+% bObsImg( bObsImg>1 ) = 0;
+% bObsImg = im2double( bObsImg );
+% bObsImg( bObsImg>0 ) = 1;
 
 % prepare for sensitivity, generate a group of step
 senStep = 0:senAcc:senRange;

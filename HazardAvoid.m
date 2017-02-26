@@ -1,4 +1,9 @@
 % rigid without any rotation here.
+% same structure as new.m
+% change obstacle avoidance as hazard avoidance
+% we assume the field is harzard to our robots, and set a threhold value
+% as a obstacle for robot system
+
 % clear workspace
 clear
 
@@ -6,12 +11,17 @@ clear
 % Load Data of previous CO2 field
 load('fieldData.mat');
 % Load trajectory
-% Load Obstacle
-load('obs03.mat');
+% Load Background Obstacle
+load('obs00.mat');
 % flip
-obs01f = flip(obs01,1);
+obs00f = flip(obs00,1);% nothing happened :D
 % to obs
+obs00b = fun_img2obs( obs00f );
+% if with obs
+load('obs01.mat');
+obs01f = flip(obs01,1);
 obs01b = fun_img2obs( obs01f );
+obs00b = or( obs00b, obs01b );
 
 %% Claim Parameters
 % Number of Agent in Simulation
@@ -30,17 +40,19 @@ ffactor =[0.1, 0.3, 0.6];
 filOLen = 7;
 % gradient coefficient for formation center movenment
 gradCoe = 0.5;
+% hazard limit
+hazardLim = 3000;
 % Initial Background concentraion for CO2 field in Simulation
 iniBG = 0;
 % Initial Estimation Value
 iniEst = 0.6;
 % Initial Location for Simulation
-initLocC = ones(AgentNumber,1)*[ -1 , 0 , 0 ];
+initLocC = ones(AgentNumber,1)*[ 0 , -0.5 , 0 ];
 initLoc = [ 0 , 0.2 , 0 ; 0.2 , 0 , 0 ;  0 , -0.2 , 0 ; -0.2 , 0 , 0 ] + initLocC;
 % maximum loop number
-loopNumMax = 250;
+loopNumMax = 300;
 % obs repulse force parameter
-obsRepulse = 0.02;
+obsRepulse = 0.03;
 % fake obs sensor range
 SensingRange = 1.5;%(1.5m)
 % fake obs sensor accuracy
@@ -197,6 +209,16 @@ while(1)
         DataSet( counter , dataLen*(agent-1)+5 ) = ...
             fun_dataFilter( ffactor , [ reading_2 , reading_1 ], reading_0 );
     end
+    % generate hazard region
+    xmesh = [-2:0.1:2];
+    ymesh = [-2:0.1:2];
+    [xh,yh] = meshgrid(xmesh,ymesh);
+    zh = field( xh , yh );
+    zh( zh<hazardLim ) = 0;
+    zh( zh>=hazardLim ) =1;
+    % merge with obs
+    obs02b = or( obs00b, zh );
+    clear zh
     %% run algorithm
     % prepare data (empty vector)
     values = zeros( 2 , AgentNumber );
@@ -257,7 +279,7 @@ while(1)
     %SensingRange = 1.5;%(1.5m)
     %SensorAcc = 0.1;
     % generate obs sensor result
-    [fArc,bArc]  = fun_fakeObsSensor( obs01b , RobotCenter , SensingRange , SensorAcc , 6 );
+    [fArc,bArc]  = fun_fakeObsSensor( obs02b , RobotCenter , SensingRange , SensorAcc , 6 );
     % calculate gradient for group of robot
     obst = fun_obs2grad(fArc,bArc,SensingRange , obsRepulse );
     % update rc
@@ -306,7 +328,7 @@ while(1)
     y0(AgentNumber+1) = y0( 1 );
     plot( x0 , y0 , '-' );
     % draw obstacles
-    contour(xm,ym,obs01b);
+    contour(xm,ym,obs02b);
     drawnow;
     %% Break Condition
     if counter >= ( loopNumMax + 2 )

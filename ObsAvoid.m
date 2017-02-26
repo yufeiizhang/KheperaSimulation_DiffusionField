@@ -1,4 +1,7 @@
 % rigid without any rotation here.
+
+% just another version of new.m
+
 % clear workspace
 clear
 
